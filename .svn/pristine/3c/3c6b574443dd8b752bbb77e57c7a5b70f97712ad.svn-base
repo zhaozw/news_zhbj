@@ -1,0 +1,26 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.view.View;
+import android.widget.TextView;
+
+/**
+ * Created by wangdh on 2016/11/27.
+ * pager界面基类
+ */
+public abstract class BasePager {
+    public Context context;
+
+    public BasePager(Context context) {
+        this.context = context;
+    }
+
+    /**
+     * 1.确定当前自定义pager的布局    View.inflate 将布局转换为view
+     * 2. 查找控件
+     * @return
+     */
+    public abstract View initView();
+
+    public abstract void initData();
+}

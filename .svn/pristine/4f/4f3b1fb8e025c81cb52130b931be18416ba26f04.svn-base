@@ -1,0 +1,95 @@
+package cn.itcast.zz.zhbj20.view;
+
+import android.content.Context;
+import android.media.Image;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.util.AttributeSet;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+
+import java.util.List;
+
+import cn.itcast.zz.zhbj20.R;
+
+/**
+ * Created by wangdh on 2016/11/30.
+ * 1. 自动轮播,
+ * 2. 子Viewpager左右滑动.
+ */
+public class RollViewPager extends ViewPager {
+    private List<String> topImageUrls;
+    private static final int msg_auto_play_next = 0;
+
+    public RollViewPager(Context context) {
+        super(context);
+    }
+
+    public RollViewPager(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
+    /**
+     * 接收数据 图片url
+     * @param topImageUrls
+     */
+    public void setTopImageUrls(List<String> topImageUrls) {
+        this.topImageUrls = topImageUrls;
+        //设置适配器
+    }
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case msg_auto_play_next:
+                    //切换下一张
+                    int nextItem = (getCurrentItem()+1)%topImageUrls.size();
+                    setCurrentItem(nextItem);
+                    //循环
+                    handler.sendEmptyMessageDelayed(msg_auto_play_next,1000);
+                    break;
+            }
+        }
+    };
+
+    /**
+     * 开始轮播
+     */
+    public void startRoll() {
+        //设置适配器
+        RollPagerAdapter adapter = new RollPagerAdapter();
+        setAdapter(adapter);
+        //开始轮播  每隔一段时间 切换一张
+        handler.sendEmptyMessageDelayed(msg_auto_play_next,1000);
+    }
+    class RollPagerAdapter extends PagerAdapter{
+
+        @Override
+        public int getCount() {
+            return topImageUrls.size();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            ImageView imageview = (ImageView) View.inflate(getContext(), R.layout.viewpager_item,null);
+            //展示网络图片 TODO
+            container.addView(imageview);
+            return imageview;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
+    }
+}

@@ -1,0 +1,20 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.widget.TextView;
+
+/**
+ * Created by wangdh on 2016/11/27.
+ * pager界面基类
+ */
+public abstract class BasePager {
+    public Context context;
+
+    public BasePager(Context context) {
+        this.context = context;
+    }
+
+    public abstract void initView();
+
+    public abstract void initData();
+}

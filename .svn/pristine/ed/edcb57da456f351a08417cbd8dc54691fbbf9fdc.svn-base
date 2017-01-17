@@ -1,0 +1,25 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.widget.TextView;
+
+/**
+ * Created by wangdh on 2016/11/27.
+ * 组图对应的pager界面
+ */
+public class ArrPicPager extends BasePager {
+
+    private TextView textView;
+
+    public ArrPicPager(Context context){
+        super(context);
+    }
+    @Override
+    public void initView(){
+        textView = new TextView(context);
+    }
+    @Override
+    public void initData(){
+        textView.setText("我是组图界面");
+    }
+}

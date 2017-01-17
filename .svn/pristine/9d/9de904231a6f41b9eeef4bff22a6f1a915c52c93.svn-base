@@ -1,0 +1,25 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.widget.TextView;
+
+/**
+ * Created by wangdh on 2016/11/27.
+ * 新闻对应的pager界面
+ */
+public class NewsPager  extends BasePager {
+
+    private TextView textView;
+
+    public NewsPager(Context context){
+        super(context);
+    }
+    @Override
+    public void initView(){
+        textView = new TextView(context);
+    }
+    @Override
+    public void initData(){
+        textView.setText("我是新闻界面");
+    }
+}

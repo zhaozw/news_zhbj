@@ -1,0 +1,41 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.view.View;
+import android.widget.TextView;
+
+import cn.itcast.zz.zhbj20.bean.NewsBean;
+
+/**
+ * Created by wangdh on 2016/11/30.
+ * 新闻子界面
+ * 传递新闻子界面所需要的数据:
+ *
+ *      1. 构造  (传递必须的数据)
+ *      2. setXXX() 方法
+ */
+public class NewsItemPager extends  BasePager {
+
+    private  NewsBean newsBean;
+
+    private TextView textView;
+
+    public NewsItemPager(Context context, NewsBean newsBean) {
+        super(context);
+        this.newsBean = newsBean;
+    }
+
+    @Override
+    public View initView() {
+        textView = new TextView(context);
+        return textView;
+    }
+
+    @Override
+    public void initData() {
+        textView.setText(newsBean.title+":"+newsBean.id);
+        //请求数据  HttpUtils
+
+
+    }
+}

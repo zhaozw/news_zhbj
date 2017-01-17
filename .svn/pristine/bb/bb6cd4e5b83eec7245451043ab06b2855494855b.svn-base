@@ -1,0 +1,138 @@
+package cn.itcast.zz.zhbj20.activity;
+
+import android.app.Activity;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ImageButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+
+import com.lidroid.xutils.ViewUtils;
+import com.lidroid.xutils.view.annotation.ViewInject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.itcast.zz.zhbj20.R;
+import cn.itcast.zz.zhbj20.pager.ArrPicPager;
+import cn.itcast.zz.zhbj20.pager.BasePager;
+import cn.itcast.zz.zhbj20.pager.InterActionPager;
+import cn.itcast.zz.zhbj20.pager.NewsPager;
+import cn.itcast.zz.zhbj20.pager.TopicPager;
+import cn.itcast.zz.zhbj20.view.LazyViewPager;
+import cn.itcast.zz.zhbj20.view.MyLazyViewPager;
+
+public class MainActivity extends Activity {
+
+    private static final String TAG = "MainActivity";
+    private final RadioGroup.OnCheckedChangeListener mainCheckedChangeListener = new RadioGroup.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(RadioGroup group, int checkedId) {
+            int item = 0;
+            imgbtn_right2.setVisibility(View.GONE);
+            switch (checkedId){
+                case R.id.rb_news:
+                    item=0;
+                    txt_title.setText("新闻");
+                    break;
+                case R.id.rb_topic:
+                    item=1;
+                    txt_title.setText("专题");
+                    break;
+                case R.id.rb_arrpic:
+                    item=2;
+                    txt_title.setText("组图");
+                    //显示右侧按钮
+                    imgbtn_right2.setVisibility(View.VISIBLE);
+                    imgbtn_right2.setImageResource(R.drawable.icon_pic_list_type);
+                    //将右侧按钮,传递给arrpicPager
+                    ArrPicPager arrPicPager = (ArrPicPager) pagers.get(2);
+                    arrPicPager.passBtn(imgbtn_right2);
+                    break;
+                case R.id.rb_interaction:
+                    item=3;
+                    txt_title.setText("互动");
+                    break;
+            }
+            //切换viewpager
+            vp_main.setCurrentItem(item);//int item 当前界面索引
+
+        }
+    };
+    @ViewInject(R.id.vp_main)
+    private MyLazyViewPager vp_main;
+
+    @ViewInject(R.id.rg_main)
+    private RadioGroup rg_main;
+
+    //标题
+    @ViewInject(R.id.txt_title)
+    private TextView txt_title;
+
+    @ViewInject(R.id.imgbtn_right2)
+    private ImageButton imgbtn_right2;
+
+    //数据源  自定义pager
+    private List<BasePager> pagers = new ArrayList<>();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);//请求窗体的样式,无标题栏
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ViewUtils.inject(this);
+        //初始化数据源
+        pagers.add(new NewsPager(this));
+        pagers.add(new TopicPager(this));
+        pagers.add(new ArrPicPager(this));
+        pagers.add(new InterActionPager(this));
+        // vp_main 设置适配器
+        MainPagerAdapter adapter = new MainPagerAdapter();
+        vp_main.setAdapter(adapter);
+        //radioGroup 添加切换监听
+        rg_main.setOnCheckedChangeListener(mainCheckedChangeListener);
+        //默认切换
+        rg_main.check(R.id.rb_news);
+        txt_title.setText("新闻");
+    }
+    class MainPagerAdapter extends PagerAdapter{
+
+        @Override
+        public int getCount() {
+            return pagers.size();
+        }
+
+        /**
+         * 1. 根据position获取对应的view,添加到container
+         * 2. 将view返回
+         * @param container
+         * @param position
+         * @return
+         */
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Log.i(TAG, "instantiateItem: "+position);
+            BasePager currentPager = pagers.get(position);
+            View currentView = currentPager.initView();
+            currentPager.initData();//一定不要忘记,初始化view的时候,必须初始化数据
+            container.addView(currentView);
+            return currentView;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            Log.i(TAG, "destroyItem: "+position);
+            container.removeView((View) object);
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
+    }
+}

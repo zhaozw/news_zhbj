@@ -1,0 +1,149 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.lidroid.xutils.ViewUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.view.annotation.ViewInject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.itcast.zz.zhbj20.R;
+import cn.itcast.zz.zhbj20.bean.NewsBean;
+import cn.itcast.zz.zhbj20.bean.NewsItemBean;
+import cn.itcast.zz.zhbj20.utils.NetUrl;
+import cn.itcast.zz.zhbj20.utils.SpUtils;
+import cn.itcast.zz.zhbj20.view.RollViewPager;
+
+/**
+ * Created by wangdh on 2016/11/30.
+ * 新闻子界面
+ * 传递新闻子界面所需要的数据:
+ *
+ *      1. 构造  (传递必须的数据)
+ *      2. setXXX() 方法
+ */
+public class NewsItemPager extends  BasePager {
+
+    private static final String TAG = "NewsItemPager";
+    private  NewsBean newsBean;
+
+
+    private int pageNum = 0;//页码
+
+    @ViewInject(R.id.lv_news_item_pager)
+    private ListView lv_news_item_pager;
+
+    //存放viewpager的线形布局
+    @ViewInject(R.id.ll_top_news_viewpager)
+    private LinearLayout ll_top_news_viewpager;
+    //轮播图对应的标题
+    @ViewInject(R.id.tv_top_news_title)
+    private TextView tv_top_news_title;
+
+    //存放 指示点
+    @ViewInject(R.id.ll_dots)
+    private LinearLayout ll_dots;
+    private RollViewPager rollViewPager;
+
+    public NewsItemPager(Context context, NewsBean newsBean) {
+        super(context);
+        this.newsBean = newsBean;
+    }
+
+    @Override
+    public View initView() {
+        View view = View.inflate(context, R.layout.news_item_pager,null);
+        ViewUtils.inject(this,view);
+        //listview的头 -- 轮播图
+        View rollView = View.inflate(context,R.layout.layout_roll_view,null);
+        ViewUtils.inject(this,rollView);
+        //listview添加头布局
+        lv_news_item_pager.addHeaderView(rollView);
+        //必须设置适配器  (填充的身体)
+        String[] datas = {"aaaaaaaa","bbbbbbbbbb","ccccccccc","ddddddddd","eeeeeeeee"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,android.R.layout.simple_list_item_1,
+                android.R.id.text1,datas);
+        lv_news_item_pager.setAdapter(adapter);
+
+        //添加自定义viewpager
+
+        rollViewPager = new RollViewPager(context);
+        ll_top_news_viewpager.addView(rollViewPager);
+
+        return view;
+    }
+
+    @Override
+    public void initData() {
+//        textView.setText(newsBean.title+":"+newsBean.id);
+        //http://localhost:8080/zhbjServer19/getNewsByNewsTypeId?newsTypeId=10007&pageNum=0
+        final String url = NetUrl.base_url+"/getNewsByNewsTypeId?newsTypeId="+newsBean.id+"&pageNum="+pageNum;
+        //1. 获取缓存
+        String cacheJson = SpUtils.getCache(context,url);
+//        2. 如果有缓存,解析缓存--展示缓存  parseJson()
+        if(!TextUtils.isEmpty(cacheJson)){
+//            parseJson(cacheJson);
+        }
+//        3. 直接请求网络
+        mySend(url, new RequestCallBack<String>() {
+            @Override
+            public void onSuccess(ResponseInfo<String> responseInfo) {
+                String jsonResult = responseInfo.result;
+                Log.i(TAG, "onSuccess: 新闻子界面请求成功:"+jsonResult);
+                // 4. 将数据缓存起来
+//                SpUtils.setCache(context,url,jsonResult);
+//              5. 解析数据 -- 展示数据  parseJson
+                parseJson(jsonResult);
+            }
+
+            @Override
+            public void onFailure(HttpException error, String msg) {
+                error.printStackTrace();
+                Log.i(TAG, "onFailure: 新闻子界面请求失败:"+msg);
+            }
+        });
+    }
+
+    //顶部标题集合
+    private List<String> topTitles = new ArrayList<>();
+    //顶部图片url集合
+    private List<String> topImageUrls = new ArrayList<>();
+
+    /**
+     * 解析json,展示数据
+     * @param jsonString
+     */
+    private void parseJson(String jsonString) {
+        //解析json
+        Gson gson = new Gson();
+        NewsItemBean newsItemBean = gson.fromJson(jsonString, NewsItemBean.class);
+        Log.i(TAG, "parseJson: 新闻子界面解析成功:"+newsItemBean.toString());
+
+        //轮播图逻辑: 将数据传递给 ROllViewpager,自己设置适配器
+
+        //初始化 标题集合,图片集合
+        for (int i=0;i<newsItemBean.topNewss.size();i++){
+            NewsItemBean.TopNews topNews = newsItemBean.topNewss.get(i);
+            topTitles.add(topNews.title);
+            topImageUrls.add(topNews.topimage);
+        }
+        //传递 图片集合
+        rollViewPager.setTopImageUrls(topImageUrls);
+        //开始轮播
+        rollViewPager.startRoll();
+
+
+    }
+}

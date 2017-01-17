@@ -1,0 +1,32 @@
+package cn.itcast.zz.zhbj20.utils;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+/**
+ * Created by wangdh on 2016/11/30.
+ * sp的工具类
+ */
+public class SpUtils {
+    /**
+     * 获取缓存
+     * @param context
+     * @param key  -- json数据的url
+     * @return
+     */
+    public static String getCache(Context context, String key) {
+        SharedPreferences sp = context.getSharedPreferences("cache",context.MODE_PRIVATE);
+        return sp.getString(key,"");
+    }
+
+    /**
+     * 设置缓存
+     * @param context
+     * @param key  -- url
+     * @param value  -- jsonString
+     */
+    public static void setCache(Context context, String key, String value) {
+        SharedPreferences sp = context.getSharedPreferences("cache",context.MODE_PRIVATE);
+        sp.edit().putString(key,value).commit();
+    }
+}

@@ -1,0 +1,167 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.lidroid.xutils.HttpUtils;
+import com.lidroid.xutils.ViewUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.http.client.HttpRequest;
+import com.lidroid.xutils.view.annotation.ViewInject;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+
+import cn.itcast.zz.zhbj20.R;
+import cn.itcast.zz.zhbj20.bean.NewsBean;
+import cn.itcast.zz.zhbj20.indicator.TabPageIndicator;
+import cn.itcast.zz.zhbj20.utils.NetUrl;
+import cn.itcast.zz.zhbj20.utils.SpUtils;
+
+/**
+ * Created by wangdh on 2016/11/27.
+ * 新闻对应的pager界面
+ */
+public class NewsPager  extends BasePager {
+
+    private static final String TAG = "NewsPager";
+
+    @ViewInject(R.id.indicator)
+    private TabPageIndicator indicator;
+
+    @ViewInject(R.id.viewpager)
+    private ViewPager viewPager;
+    //当前新闻类型数据
+    private ArrayList<NewsBean> newsBeans = new ArrayList<>();
+    //新闻界面adapter的数据源
+    private ArrayList<BasePager> itemPagers = new ArrayList<>();
+    private MyNewsPagerAdapter adapter;
+
+    public NewsPager(Context context){
+        super(context);
+    }
+    @Override
+    public View initView(){
+        View view = View.inflate(context, R.layout.pager_news,null);
+        //注册
+        ViewUtils.inject(this,view);
+        return  view;
+    }
+    @Override
+    public void initData(){
+        //先设置适配器
+        adapter = new MyNewsPagerAdapter();
+        viewPager.setAdapter(adapter);
+        //关联
+        indicator.setViewPager(viewPager);
+
+        final String url = NetUrl.base_url+"/getAllNewsType";
+
+//        1. 获取缓存
+          String cacheJson = SpUtils.getCache(context,url);
+//        2. 如果有缓存,解析缓存--展示缓存  parseJson()
+        if(!TextUtils.isEmpty(cacheJson)){
+//            parseJson(cacheJson);
+        }
+
+//        3. 直接请求网络
+        mySend(url, new RequestCallBack<String>() {
+            @Override
+            public void onSuccess(ResponseInfo<String> responseInfo) {
+                //获取json结果
+                String jsonResult = responseInfo.result;
+                Log.i(TAG, "onSuccess: 新闻界面请求成功:"+jsonResult);
+                //  4. 将数据缓存起来  存储的数据 json?存储的方式  sp
+//                SpUtils.setCache(context,url,jsonResult);
+                // 5. 解析数据 -- 展示数据  parseJson
+                //解析json
+                parseJson(jsonResult);
+            }
+
+            @Override
+            public void onFailure(HttpException error, String msg) {
+                error.printStackTrace();
+                Log.i(TAG, "onFailure: 新闻界面请求失败:"+msg);
+            }
+        });
+
+    }
+
+    private void mySend(String url, RequestCallBack<String> reqestCallback) {
+        //请求数据
+        HttpUtils httpUtils = new HttpUtils();
+        //1.请求方式  get/post  post安全,url长度没限制
+        //            get  常用于 获取数据
+        //            post 常用于 提交数据
+        httpUtils.send(HttpRequest.HttpMethod.GET, url, reqestCallback);
+    }
+
+    /**
+     * 解析json -- 展示数据
+     * @param jsonResult
+     */
+    private void parseJson(String jsonResult) {
+        Gson gson = new Gson();
+//        NewsBean newsBean = gson.fromJson(jsonResult, NewsBean.class);  // {} -- 一个javabean
+        //Type 数据类型 , TypeToken 可以将 object --- type
+        // TypeToken<T> -- T 类型  -- ArrayList<NewsBean>
+        Type type = new TypeToken<ArrayList<NewsBean>>(){}.getType();
+        newsBeans = gson.fromJson(jsonResult,type);
+        Log.i(TAG, "parseJson: 解析成功:"+ newsBeans.toString());
+
+        //填充数据源
+        for (int i=0;i<newsBeans.size();i++){
+            itemPagers.add(new NewsItemPager(context,newsBeans.get(i)));
+        }
+
+        //刷新适配器  (数据源对象没有变,变化内部的数据)
+        adapter.notifyDataSetChanged();
+        indicator.notifyDataSetChanged();
+
+    }
+    class MyNewsPagerAdapter extends PagerAdapter{
+
+        @Override
+        public int getCount() {
+            return itemPagers.size();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+//            TextView textView = new TextView(context);
+//            NewsBean currentNewsBean = newsBeans.get(position);
+//            textView.setText(currentNewsBean.title+currentNewsBean.id);
+//            container.addView(textView);
+//            return textView;
+            BasePager currentItemPager = itemPagers.get(position);
+            View currentItemView = currentItemPager.initView();
+            currentItemPager.initData();
+            container.addView(currentItemView);
+            return currentItemView;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return newsBeans.get(position).title;
+        }
+    }
+}

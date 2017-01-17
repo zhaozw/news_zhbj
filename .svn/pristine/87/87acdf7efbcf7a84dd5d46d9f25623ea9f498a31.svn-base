@@ -1,0 +1,138 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.lidroid.xutils.HttpUtils;
+import com.lidroid.xutils.ViewUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.http.client.HttpRequest;
+import com.lidroid.xutils.view.annotation.ViewInject;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.itcast.zz.zhbj20.R;
+import cn.itcast.zz.zhbj20.bean.NewsBean;
+import cn.itcast.zz.zhbj20.indicator.TabPageIndicator;
+import cn.itcast.zz.zhbj20.utils.NetUrl;
+
+/**
+ * Created by wangdh on 2016/11/27.
+ * 新闻对应的pager界面
+ */
+public class NewsPager  extends BasePager {
+
+    private static final String TAG = "NewsPager";
+
+    @ViewInject(R.id.indicator)
+    private TabPageIndicator indicator;
+
+    @ViewInject(R.id.viewpager)
+    private ViewPager viewPager;
+    private ArrayList<NewsBean> newsBeans = new ArrayList<>();
+    private MyNewsPagerAdapter adapter;
+
+    public NewsPager(Context context){
+        super(context);
+    }
+    @Override
+    public View initView(){
+        View view = View.inflate(context, R.layout.pager_news,null);
+        //注册
+        ViewUtils.inject(this,view);
+        return  view;
+    }
+    @Override
+    public void initData(){
+        //先设置适配器
+        adapter = new MyNewsPagerAdapter();
+        viewPager.setAdapter(adapter);
+        //关联
+        indicator.setViewPager(viewPager);
+
+        //请求数据
+        HttpUtils httpUtils = new HttpUtils();
+        //1.请求方式  get/post  post安全,url长度没限制
+        //            get  常用于 获取数据
+        //            post 常用于 提交数据
+        String url = NetUrl.base_url+"/getAllNewsType";
+        httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
+            @Override
+            public void onSuccess(ResponseInfo<String> responseInfo) {
+                //获取json结果
+                String jsonResult = responseInfo.result;
+                Log.i(TAG, "onSuccess: 新闻界面请求成功:"+jsonResult);
+                //解析json
+                parseJson(jsonResult);
+
+            }
+
+            @Override
+            public void onFailure(HttpException error, String msg) {
+                error.printStackTrace();
+                Log.i(TAG, "onFailure: 新闻界面请求失败:"+msg);
+            }
+        });
+    }
+
+    /**
+     * 解析json -- 展示数据
+     * @param jsonResult
+     */
+    private void parseJson(String jsonResult) {
+        Gson gson = new Gson();
+//        NewsBean newsBean = gson.fromJson(jsonResult, NewsBean.class);  // {} -- 一个javabean
+        //Type 数据类型 , TypeToken 可以将 object --- type
+        // TypeToken<T> -- T 类型  -- ArrayList<NewsBean>
+        Type type = new TypeToken<ArrayList<NewsBean>>(){}.getType();
+        newsBeans = gson.fromJson(jsonResult,type);
+        Log.i(TAG, "parseJson: 解析成功:"+ newsBeans.toString());
+
+        //刷新适配器  (数据源对象没有变,变化内部的数据)
+        adapter.notifyDataSetChanged();
+        indicator.notifyDataSetChanged();
+
+    }
+    class MyNewsPagerAdapter extends PagerAdapter{
+
+        @Override
+        public int getCount() {
+            return newsBeans.size();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            TextView textView = new TextView(context);
+            NewsBean currentNewsBean = newsBeans.get(position);
+            textView.setText(currentNewsBean.title+currentNewsBean.id);
+            container.addView(textView);
+            return textView;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return newsBeans.get(position).title;
+        }
+    }
+}

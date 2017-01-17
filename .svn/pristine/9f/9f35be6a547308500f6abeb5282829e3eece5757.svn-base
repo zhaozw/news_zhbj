@@ -1,0 +1,80 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.lidroid.xutils.HttpUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.http.client.HttpRequest;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+
+import cn.itcast.zz.zhbj20.bean.NewsBean;
+import cn.itcast.zz.zhbj20.utils.NetUrl;
+
+/**
+ * Created by wangdh on 2016/11/27.
+ * 新闻对应的pager界面
+ */
+public class NewsPager  extends BasePager {
+
+    private static final String TAG = "NewsPager";
+    private TextView textView;
+
+    public NewsPager(Context context){
+        super(context);
+    }
+    @Override
+    public View initView(){
+        textView = new TextView(context);
+        return textView;
+    }
+    @Override
+    public void initData(){
+        textView.setText("我是新闻界面");
+        //请求数据
+        HttpUtils httpUtils = new HttpUtils();
+        //1.请求方式  get/post  post安全,url长度没限制
+        //            get  常用于 获取数据
+        //            post 常用于 提交数据
+        String url = NetUrl.base_url+"/getAllNewsType";
+        httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
+            @Override
+            public void onSuccess(ResponseInfo<String> responseInfo) {
+                //获取json结果
+                String jsonResult = responseInfo.result;
+                Log.i(TAG, "onSuccess: 新闻界面请求成功:"+jsonResult);
+                //解析json
+                parseJson(jsonResult);
+
+            }
+
+            @Override
+            public void onFailure(HttpException error, String msg) {
+                error.printStackTrace();
+                Log.i(TAG, "onFailure: 新闻界面请求失败:"+msg);
+            }
+        });
+    }
+
+    /**
+     * 解析json -- 展示数据
+     * @param jsonResult
+     */
+    private void parseJson(String jsonResult) {
+        Gson gson = new Gson();
+//        NewsBean newsBean = gson.fromJson(jsonResult, NewsBean.class);  // {} -- 一个javabean
+        //Type 数据类型 , TypeToken 可以将 object --- type
+        // TypeToken<T> -- T 类型  -- ArrayList<NewsBean>
+        Type type = new TypeToken<ArrayList<NewsBean>>(){}.getType();
+        ArrayList<NewsBean> newsBeans = gson.fromJson(jsonResult,type);
+        Log.i(TAG, "parseJson: 解析成功:"+newsBeans.toString());
+    }
+}

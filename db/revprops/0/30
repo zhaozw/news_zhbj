@@ -1,0 +1,13 @@
+K 10
+svn:author
+V 3
+egg
+K 8
+svn:date
+V 27
+2016-12-01T06:54:04.093813Z
+K 7
+svn:log
+V 39
+12-抽取Viewpager的PagerAdapter基类
+END

@@ -1,0 +1,40 @@
+id: 1-2.0.r2/0
+type: dir
+count: 0
+cpath: /zhbj20/trunk
+copyroot: 0 /
+
+PLAIN
+K 5
+trunk
+V 14
+dir 1-2.0.r2/0
+END
+ENDREP
+id: 0-1.0.r2/117
+type: dir
+pred: 0-1.0.r1/0
+count: 1
+text: 2 70 34 34 0d95ef50f232a54516855f60974ceed8
+cpath: /zhbj20
+copyroot: 0 /
+
+PLAIN
+K 6
+zhbj20
+V 16
+dir 0-1.0.r2/117
+END
+ENDREP
+id: 0.0.r2/300
+type: dir
+pred: 0.0.r1/112
+count: 2
+text: 2 250 37 37 a3373878772caed6f831e62b55610fbd
+cpath: /
+copyroot: 0 /
+
+_1.0.t1-1 add-dir false false false /zhbj20/trunk
+
+
+300 426

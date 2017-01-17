@@ -1,0 +1,152 @@
+package cn.itcast.zz.zhbj20.pager;
+
+import android.content.Context;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.GridView;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.lidroid.xutils.BitmapUtils;
+import com.lidroid.xutils.ViewUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.view.annotation.ViewInject;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.itcast.zz.zhbj20.R;
+import cn.itcast.zz.zhbj20.adapter.DefaultBaseAdapter;
+import cn.itcast.zz.zhbj20.bean.ArrPicBean;
+import cn.itcast.zz.zhbj20.utils.NetUrl;
+
+/**
+ * Created by wangdh on 2016/11/27.
+ * 组图对应的pager界面
+ */
+public class ArrPicPager extends BasePager {
+
+
+    private static final String TAG = "ArrPicPager";
+
+    private BitmapUtils bitmapUtils;
+
+    public ArrPicPager(Context context){
+        super(context);
+        bitmapUtils = new BitmapUtils(context);
+    }
+
+    @ViewInject(R.id.lv_arr_pic)
+    private ListView lv_arr_pic;
+
+    @ViewInject(R.id.gv_arr_pic)
+    private GridView gv_arr_pic;
+
+    @Override
+    public View initView(){
+        View view = View.inflate(context, R.layout.pager_arr_pic,null);
+        ViewUtils.inject(this,view);
+        return view;
+    }
+    @Override
+    public void initData(){
+        //请求数据
+        String url = NetUrl.base_url+"/getAllArrPic";
+        mySend(url, new RequestCallBack<String>() {
+            @Override
+            public void onSuccess(ResponseInfo<String> responseInfo) {
+                String resultJson = responseInfo.result;
+                Log.i(TAG, "onSuccess: 组图界面请求成功:"+resultJson);
+                parseJson(resultJson);
+            }
+
+            @Override
+            public void onFailure(HttpException error, String msg) {
+                error.printStackTrace();
+                Log.i(TAG, "onFailure: "+msg);
+            }
+        });
+
+    }
+
+    /**
+     * 解析
+     * @param resultJson
+     */
+    private void parseJson(String resultJson) {
+        //Gson
+        Gson gson = new Gson();
+        Type type = new TypeToken<ArrayList<ArrPicBean>>(){}.getType();
+        ArrayList<ArrPicBean> arrPicBeans = gson.fromJson(resultJson,type);
+        Log.i(TAG, "parseJson: 解析成功:"+arrPicBeans.toString());
+        ArrPicAdapter adapter = new ArrPicAdapter(arrPicBeans);
+        lv_arr_pic.setAdapter(adapter);
+        gv_arr_pic.setAdapter(adapter);//gv与lv的子条目一样,公用适配器
+    }
+
+    private boolean isListType = true;//默认是listview
+
+    /**
+     * 传递 右侧按钮
+     * @param imgbtn_right2
+     */
+    public void passBtn(final ImageButton imgbtn_right2) {
+        //点击按钮 -- 切换 lv/gv
+        imgbtn_right2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isListType){
+                    //切换为 gv
+                    gv_arr_pic.setVisibility(View.VISIBLE);
+                    lv_arr_pic.setVisibility(View.GONE);
+                    imgbtn_right2.setImageResource(R.drawable.icon_pic_grid_type);
+                }else{
+                    //切换为 lv
+                    gv_arr_pic.setVisibility(View.GONE);
+                    lv_arr_pic.setVisibility(View.VISIBLE);
+                    imgbtn_right2.setImageResource(R.drawable.icon_pic_list_type);
+                }
+                isListType = !isListType;
+            }
+        });
+    }
+
+    class ArrPicAdapter extends DefaultBaseAdapter<ArrPicBean> {
+
+        public ArrPicAdapter(List<ArrPicBean> datas) {
+            super(datas);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ArrpicHodler hodler = null;
+            if(convertView==null){
+                convertView = View.inflate(context,R.layout.listview_item_arr_pic,null);
+                hodler = new ArrpicHodler();
+                hodler.iv_arr_pic_item = (ImageView) convertView.findViewById(R.id.iv_arr_pic_item);
+                hodler.tv_arr_pic_item = (TextView) convertView.findViewById(R.id.tv_arr_pic_item);
+                convertView.setTag(hodler);
+            }else{
+                hodler = (ArrpicHodler) convertView.getTag();
+            }
+            //填充数据
+            ArrPicBean arrPicBean = datas.get(position);
+            hodler.tv_arr_pic_item.setText(arrPicBean.title);
+            //图片
+            bitmapUtils.display(hodler.iv_arr_pic_item,NetUrl.base_url+arrPicBean.listimage);
+            return convertView;
+        }
+    }
+    class ArrpicHodler{
+        ImageView iv_arr_pic_item;
+        TextView tv_arr_pic_item;
+    }
+}

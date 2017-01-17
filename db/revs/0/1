@@ -1,0 +1,25 @@
+id: 0-1.0.r1/0
+type: dir
+count: 0
+cpath: /zhbj20
+copyroot: 0 /
+
+PLAIN
+K 6
+zhbj20
+V 14
+dir 0-1.0.r1/0
+END
+ENDREP
+id: 0.0.r1/112
+type: dir
+pred: 0.0.r0/17
+count: 1
+text: 1 64 35 35 b77f3f87fcd8bd572d3f3a35d83c6fc1
+cpath: /
+copyroot: 0 /
+
+_0.0.t0-0 add-dir false false false /zhbj20
+
+
+112 236

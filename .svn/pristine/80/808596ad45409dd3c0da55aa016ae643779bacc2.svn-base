@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_title_bar" />
+
+    <!-- <FrameLayout -->
+    <!-- android:id="@+id/layout_content" -->
+    <!-- android:layout_width="match_parent" -->
+    <!-- android:layout_height="0dip" -->
+    <!-- android:layout_weight="1.0" -->
+    <!-- /> -->
+
+
+    <!--
+         <view
+        android:id="@+id/layout_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1.0" 
+        class="com.itheima46.zhbj.view.MyViewPager"/>
+    -->
+
+    <cn.itcast.zz.zhbj20.view.LazyViewPager
+        android:id="@+id/vp_main"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1.0" />
+
+    <RadioGroup
+        android:id="@+id/rg_main"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bottom_tab_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="2dp">
+
+        <RadioButton
+            android:id="@+id/rb_news"
+            style="@style/main_tab_bottom"
+            android:drawableTop="@drawable/icon_news"
+            android:text="@string/tab_news" />
+
+        <RadioButton
+            android:id="@+id/rb_topic"
+            style="@style/main_tab_bottom"
+            android:drawableTop="@drawable/icon_topic"
+            android:text="@string/tab_topic" />
+
+        <RadioButton
+            android:id="@+id/rb_arrpic"
+            style="@style/main_tab_bottom"
+            android:drawableTop="@drawable/icon_arrpic"
+            android:text="@string/tab_arrpic" />
+
+        <RadioButton
+            android:id="@+id/rb_interaction"
+            style="@style/main_tab_bottom"
+            android:drawableTop="@drawable/icon_interaction"
+            android:text="@string/tab_interaction" />
+
+    </RadioGroup>
+
+</LinearLayout>
